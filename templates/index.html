@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h3>Progress: {{ progress }}%</h3>
+
+<form action="/add" method="POST">
+    <input name="title" placeholder="Enter task">
+    <button>Add</button>
+</form>
+
+<hr>
+
+{% for tid, task_text in tasks.items() %}
+    <div style="margin-bottom: 10px;">
+        {{ task_text }}
+        
+        <form action="/done/{{ tid }}" method="POST" style="display:inline;">
+            <button>Done</button>
+        </form>
+
+        <a href="/ai/{{ task_text }}" target="_blank">
+            <button type="button">AI Help</button>
+        </a>
+    </div>
+{% endfor %}
+
+</body>
+</html>
