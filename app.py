@@ -1,9 +1,9 @@
 import os
 import requests
 from flask import Flask, render_template, request, redirect
-from dotenv import load_dotenv  # 1. Import the loader
+from dotenv import load_dotenv
 
-# 2. Load the variables from the .env file
+# Try to load .env file if it exists (local development)
 load_dotenv()
 
 app = Flask(__name__)
@@ -12,25 +12,20 @@ tasks = {}
 next_id = 1 
 done_count = 0 
 
-# 3. Get the key from the environment instead of hardcoding it
+# This works locally (via .env) AND on GitHub (via Secrets)
 GEMINI_KEY = os.getenv("GEMINI_KEY")
 
 @app.route("/")
 def home():
     global done_count
-    if not tasks:
-        done_count = 0
-        progress = 0
-    else:
-        total = len(tasks) + done_count
-        progress = int((done_count / total) * 100)
+    total = len(tasks) + done_count
+    progress = int((done_count / total) * 100) if total > 0 else 0
     return render_template("index.html", tasks=tasks, progress=progress)
 
-# ... [Keep your /add and /done routes as they were] ...
+# ... [add and done routes remain the same] ...
 
 @app.route("/ai/<task_text>")
 def ai_help(task_text):
-    # Use the model name from your discovery list (e.g., gemini-2.0-flash)
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}"
     payload = {"contents": [{"parts": [{"text": f"Give a short 1-sentence pro-tip for: {task_text}"}]}]}
     
@@ -38,8 +33,9 @@ def ai_help(task_text):
         response = requests.post(url, json=payload)
         data = response.json()
         answer = data['candidates'][0]['content']['parts'][0]['text']
-    except:
-        answer = "Stay focused and take it one step at a time!"
+    except Exception as e:
+        # If key is missing or API fails, we give a friendly fallback
+        answer = "Unsuccesful, try again later"
         
     return f"<html><body style='font-family:sans-serif;padding:50px;'><h2>AI Tip for: {task_text}</h2><p>{answer}</p></body></html>"
 
