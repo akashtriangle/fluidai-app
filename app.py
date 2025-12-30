@@ -37,6 +37,8 @@ def done(tid):
     if tid in tasks:
         tasks.pop(tid)
         done_count += 1
+        if not tasks:
+        done_count = 0
     return redirect("/")
     
 @app.route("/ai/<task_text>")
@@ -56,6 +58,7 @@ def ai_help(task_text):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True)
+
 
 
 
