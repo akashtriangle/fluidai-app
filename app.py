@@ -22,8 +22,23 @@ def home():
     progress = int((done_count / total) * 100) if total > 0 else 0
     return render_template("index.html", tasks=tasks, progress=progress)
 
-# ... [add and done routes remain the same] ...
+@app.route("/add", methods=["POST"])
+def add():
+    global next_id
+    title = request.form.get("title")
+    if title:
+        tasks[next_id] = title
+        next_id += 1
+    return redirect("/")
 
+@app.route("/done/<int:tid>", methods=["POST"])
+def done(tid):
+    global done_count
+    if tid in tasks:
+        tasks.pop(tid)
+        done_count += 1
+    return redirect("/")
+    
 @app.route("/ai/<task_text>")
 def ai_help(task_text):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}"
@@ -41,4 +56,5 @@ def ai_help(task_text):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True)
+
 
